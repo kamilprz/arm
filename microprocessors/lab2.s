@@ -11,12 +11,12 @@ IO1DIR	EQU	0xE0028018
 IO1SET	EQU	0xE0028014
 IO1CLR	EQU	0xE002801C
 
-	ldr	r1,=IO1DIR
-	ldr	r2,=0x000f0000			;select P1.19--P1.16
-	str	r2,[r1]					;make them outputs
-	ldr	r1,=IO1SET
-	str	r2,[r1]					;set them to turn the LEDs off
-	ldr	r2,=IO1CLR
+	LDR	R1,=IO1DIR
+	LDR	R2,=0x000f0000			;select P1.19--P1.16
+	STR	R2,[R1]					;make them outputs
+	LDR	R1,=IO1SET
+	STR	R2,[R1]					;set them to turn the LEDs off
+	LDR	R2,=IO1CLR
 								; r1 points to the SET register
 								; r2 points to the CLEAR register
 								
@@ -175,7 +175,7 @@ timerLoop1
 	
 	AREA	TestData, DATA, READWRITE
 	
-number	EQU	-1049	; number to be tested
+number	EQU	1234567	; number to be tested
 
 table 	DCD 1
 		DCD	10
