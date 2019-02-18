@@ -22,6 +22,12 @@ IO1CLR	EQU	0xE002801C
 								
 goAgain
 
+	LDR	R4,=timer
+timerLoopStart
+	SUBS R4,R4,#1
+	BNE	timerLoopStart
+
+
 	LDR R0 ,= number
 	BL checkSign				; branch to checkSign subroutine
 	MOV R10,#10					; R10 = 10
@@ -84,18 +90,20 @@ checkSign
 	BCC positive				; if carry clear -> positive number		- = 1011
 	SUB R0,R0,#1				; if carry set -> negative number		+ = 1010
 	MVN R0,R0					; subtract 1 and invert bits, to convert from 2s complement
-	LDR R3,=0x000B0000
+	LDR R3,=0x000D0000
 	B displaySign
 positive
-	LDR R3,=0x000A0000
+	LDR R3,=0x00050000
 	
 displaySign	
 	STR	R3,[R2]	   				; clear the bit -> turn on the LED
 								;delay for about a half second
-	LDR	R4,=4000000
+	LDR	R4,=timer
 timerLoop
 	SUBS R4,R4,#1
 	BNE	timerLoop
+	
+	STR	R3,[R1]					;set the bit -> turn off the LED
 	
 	LDMFD SP!,{R3,R4,R6,PC}
 
@@ -116,27 +124,27 @@ displayDigit
 compare1		
 	CMP R9,#1
 	BNE compare2
-	LDR R3,=0x00010000			; R9 == 1
-	B displayDigitLED
+	LDR R3,=0x00080000			; R9 == 1
+	B displayDigitLED		
 compare2
 	CMP R9,#2
 	BNE compare3
-	LDR R3,=0x00020000			; R9 == 2
+	LDR R3,=0x00040000			; R9 == 2
 	B displayDigitLED
 compare3
 	CMP R9,#3
 	BNE compare4
-	LDR R3,=0x00030000			; R9 == 3
+	LDR R3,=0x000C0000			; R9 == 3
 	B displayDigitLED
 compare4
 	CMP R9,#4
 	BNE compare5
-	LDR R3,=0x00040000			; R9 == 4
+	LDR R3,=0x00020000			; R9 == 4
 	B displayDigitLED
 compare5
 	CMP R9,#5
 	BNE compare6
-	LDR R3,=0x00050000			; R9 == 5
+	LDR R3,=0x000A0000			; R9 == 5
 	B displayDigitLED
 compare6
 	CMP R9,#6
@@ -146,12 +154,12 @@ compare6
 compare7
 	CMP R9,#7
 	BNE compare8
-	LDR R3,=0x00070000			; R9 == 7
+	LDR R3,=0x000E0000			; R9 == 7
 	B displayDigitLED
 compare8
 	CMP R9,#8
 	BNE compare9
-	LDR R3,=0x00080000			; R9 == 8
+	LDR R3,=0x00010000			; R9 == 8
 	B displayDigitLED
 compare9
 	CMP R9,#9
@@ -159,23 +167,25 @@ compare9
 	LDR R3,=0x00090000			; R9 == 9
 	B displayDigitLED
 endCompare
-	LDR R3,=0x000E0000			; R9 == ERROR  (ERROR = 1110)
+	LDR R3,=0x000B0000			; R9 == ERROR  (ERROR = 1011)
 displayDigitLED	
 	STR	R3,[R2]	   				; clear the bit -> turn on the LED
 								;delay for about a half second
-	LDR	R4,=4000000
+	LDR	R4,=timer
 timerLoop1
 	SUBS R4,R4,#1
 	BNE	timerLoop1
 		
-;	str	r3,[r1]					;set the bit -> turn off the LED
+	STR	R3,[R1]					;set the bit -> turn off the LED
 	LDMFD SP!,{R3,R4,PC}
 
 	
 	
 	AREA	TestData, DATA, READWRITE
 	
-number	EQU	1234567	; number to be tested
+number	EQU	0	; number to be tested
+	
+timer	EQU 20000000	; timer
 
 table 	DCD 1
 		DCD	10
