@@ -17,13 +17,13 @@ IO1PIN  EQU 0XE0028010
 	;R2 IO1SET
 	;R3 IO1PIN
 	;R4 copy IO1PIN
-	;R5 input number
+	;R5 inputNumber
 	;R10 lastOperand => (1 = +)  |  (2 = -)
 	;R11 operatorPressed
 	;R12 tmp copy of either R0 or R5 depending on what needs to be displayed
 	
 	MOV R0, #0					; R0 = total sum
-	MOV R10, #0
+	MOV R10, #0					; lastOperand = null 
 	
 	LDR	R1,=IO1DIR				; R1 points to the SET register
 	LDR	R2,=0x000f0000			; select P1.19--P1.16
@@ -38,53 +38,55 @@ IO1PIN  EQU 0XE0028010
 loop
 	MOV R4, R3					; make copy of IO1PIN ------ maybe have this line before each check if too slow
 	MOVS R4, R4, LSR #20	
-	BCC pin20					; carry clear, meaning pin20 pressed
+	BCC pin20					; pin20 ( 0 if pressed , 1 if not)
 	MOVS R4, R4, LSR#1
-	BCC pin21					; pin21 pressed           ( 0 if pressed , 1 if not)
+	BCC pin21					; pin21
 	MOVS R4, R4, LSR#1
-	BCC pin22					; pin22 pressed
+	BCC pin22					; pin22 short press
 	MOVS R4, R4, LSR#1
-	BCC pin23					; pin23 pressed
+	BCC pin23					; pin23 short press
 	B loop
 	
 
-pin20							; add to number button
+pin20							; add to inputNumber
 	MOV R11, #0 				; operatorPressed = false;
-	ADD R5, R5, #1
-	MOV R12, R5
-	BL displayNumber
+	ADD R5, R5, #1				; inputNumber++
+	MOV R12, R5					; tmp = inputNumber
+	BL displayNumber			; display(tmp)
 	B loop
 
-pin21							; subtract from number button
+pin21							; subtract from inputNumber
 	MOV R11, #0 				; operatorPressed = false;
-	SUB R5, R5, #1
-	MOV R12, R5
-	BL displayNumber
+	SUB R5, R5, #1				; inputNumber--
+	MOV R12, R5					; tmp = inputNumber
+	BL displayNumber			; display(tmp)
 	B loop
 
 pin22							; plus operand
 	CMP R11, #1					; if(operandPressed == true)
-	BEQ loop					;	break
-	MOV R10, #1					; lastOperand = +
-	ADD R0, R0, R5
-	MOV R12, R0
-	BL displayNumber
-	MOV R11, #1					; operandPressed = true;
-	MOV R6, R5					; copy of last entered number (for clear)
-	MOV R5, #0 					; reset input number
-	B loop
+	BEQ loop					;	do nothing - prevents spamming of the operands
+								; else{ 
+	ADD R0, R0, R5				; 	sum = sum + inputNumber
+	MOV R12, R0					; 	tmp = sum
+	BL displayNumber			; 	display(tmp)
+	MOV R10, #1					; 	lastOperand = + (for clear)
+	MOV R11, #1					; 	operandPressed = true;
+	MOV R6, R5					; 	copy of last entered number (for clear)
+	MOV R5, #0 					; 	reset input number
+	B loop						; }
 
 pin23							; minus operand									
 	CMP R11, #1					; if(operandPressed == true)
-	BEQ loop					;	break;
-	MOV R10, #2					; lastOperand = -
-	SUB R0, R0, R5		
-	MOV R12, R0
-	BL displayNumber
-	MOV R11, #1					; operandPressed = true;
-	MOV R6, R5					; copy of last entered number (for clear)
-	MOV R5, #0 					; reset input number
-	B loop
+	BEQ loop					;	do nothing - prevents spamming of the operands
+								; else{
+	SUB R0, R0, R5				; 	sum = sum - inputNumber				
+	MOV R12, R0					;	tmp = sum
+	BL displayNumber			;	display(tmp)
+	MOV R10, #2					; 	lastOperand = - (for clear)
+	MOV R11, #1					; 	operandPressed = true;
+	MOV R6, R5					; 	copy of last entered number (for clear)
+	MOV R5, #0 					; 	reset input number
+	B loop						; }
 
 pin22Long
 	CMP R10,#0					; no operands, do nothing
