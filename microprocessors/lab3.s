@@ -47,8 +47,10 @@ loop
 	BCC pin23					; pin23 short press
 	B loop
 	
+;;;;;;;;;;;;;;;;;;;;;;;;; LONG PRESS????
 
 pin20							; add to inputNumber
+	BL delay
 	MOV R11, #0 				; operatorPressed = false;
 	ADD R5, R5, #1				; inputNumber++
 	MOV R12, R5					; tmp = inputNumber
@@ -56,6 +58,7 @@ pin20							; add to inputNumber
 	B loop
 
 pin21							; subtract from inputNumber
+	BL delay
 	MOV R11, #0 				; operatorPressed = false;
 	SUB R5, R5, #1				; inputNumber--
 	MOV R12, R5					; tmp = inputNumber
@@ -75,7 +78,7 @@ pin22							; plus operand
 	MOV R5, #0 					; 	reset input number
 	B loop						; }
 
-pin23							; minus operand									
+pin23							; minus operand
 	CMP R11, #1					; if(operandPressed == true)
 	BEQ loop					;	do nothing - prevents spamming of the operands
 								; else{
@@ -89,6 +92,7 @@ pin23							; minus operand
 	B loop						; }
 
 pin22Long
+	BL delay
 	CMP R10,#0					; no operands, do nothing
 	BEQ loop	
 	CMP R10,#1					; if(lastOperand == +)
@@ -108,6 +112,7 @@ minus
 	B loop
 	
 pin23Long
+	BL delay
 	MOV R0, #0					; clear sum
 	MOV R5, #0					; clear current number
 	MOV R11, #0					; operandPressed = false
@@ -132,18 +137,24 @@ displayNumber
 	BL reverseBits
 
 	STR	R12,[R2]	   			; clear the bit -> turn on the LED
-								;delay for about a half second
-	LDR	R4,=4000000
-timerLoop1
-	SUBS R4,R4,#1
-	BNE	timerLoop1
 
 	LDMFD SP!,{R3, R4, PC}
 
 
+; delay subroutine
+delay
+	STMFD SP!,{R4, LR}
+	;delay for about a half second
+	LDR	R4,=4000000
+timerLoop
+	SUBS R4,R4,#1
+	BNE	timerLoop
 
+	LDMFD SP!,{R4, PC}
 
 ; reverseBits subroutine
+;	need to reverse them for the LEDs to display them in the right order
+; 	essentially the subroutine isolates each bit, shifts to the correct position and merges them all back into one
 ;	R12 = number to reverse
 ;	returns a reversed R12 (the 4 bits that matter)
 reverseBits
@@ -160,8 +171,8 @@ reverseBits
 		AND R11, R8, R12
 		MOV R10, R10, LSR #1		; swap bit 2 and 3
 		MOV R11, R11, LSL #1
-		MOV R12, #0
-		AND R12, R12, R7			; join back all isolated bits
+		MOV R12, #0					; set R12 to all 0s
+		AND R12, R12, R7			; join back all isolated bits into R12
 		AND R12, R12, R9
 		AND R12, R12, R10
 		AND R12, R12, R11
