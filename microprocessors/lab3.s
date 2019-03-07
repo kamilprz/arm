@@ -35,9 +35,10 @@ IO1PIN  EQU 0XE0028010
 	LDR R3,=IO1PIN		 		; R3 points to the PIN register
 								
 
+
 loop
 	MOV R4, R3					; make copy of IO1PIN ------ maybe have this line before each check if too slow
-	MOVS R4, R4, LSR #20	
+	MOVS R4, R4, LSR #21	
 	BCC pin20					; pin20 ( 0 if pressed , 1 if not)
 	MOVS R4, R4, LSR#1
 	BCC pin21					; pin21
@@ -47,7 +48,7 @@ loop
 	BCC pin23					; pin23 short press
 	B loop
 	
-;;;;;;;;;;;;;;;;;;;;;;;;; LONG PRESS????
+
 
 pin20							; add to inputNumber
 	BL delay
@@ -57,6 +58,8 @@ pin20							; add to inputNumber
 	BL displayNumber			; display(tmp)
 	B loop
 
+
+
 pin21							; subtract from inputNumber
 	BL delay
 	MOV R11, #0 				; operatorPressed = false;
@@ -65,7 +68,14 @@ pin21							; subtract from inputNumber
 	BL displayNumber			; display(tmp)
 	B loop
 
+
+
 pin22							; plus operand
+	BL delay
+	MOV R4, R3					; make copy of IO1PIN ------ maybe have this line before each check if too slow
+	MOVS R4, R4, LSR #23
+	BCC pin22Long
+	
 	CMP R11, #1					; if(operandPressed == true)
 	BEQ loop					;	do nothing - prevents spamming of the operands
 								; else{ 
@@ -76,9 +86,16 @@ pin22							; plus operand
 	MOV R11, #1					; 	operandPressed = true;
 	MOV R6, R5					; 	copy of last entered number (for clear)
 	MOV R5, #0 					; 	reset input number
-	B loop						; }
+	B loop						; }	
+
+
 
 pin23							; minus operand
+	BL delay
+	MOV R4, R3					; make copy of IO1PIN ------ maybe have this line before each check if too slow
+	MOVS R4, R4, LSR #24
+	BCC pin23Long
+
 	CMP R11, #1					; if(operandPressed == true)
 	BEQ loop					;	do nothing - prevents spamming of the operands
 								; else{
@@ -90,6 +107,8 @@ pin23							; minus operand
 	MOV R6, R5					; 	copy of last entered number (for clear)
 	MOV R5, #0 					; 	reset input number
 	B loop						; }
+
+
 
 pin22Long
 	BL delay
@@ -111,6 +130,8 @@ minus
 	MOV R11,#0					; operandPressed = false
 	B loop
 	
+	
+	
 pin23Long
 	BL delay
 	MOV R0, #0					; clear sum
@@ -119,7 +140,9 @@ pin23Long
 	B loop
 
 	B loop						; infinite loop
+	
 stop	B	stop
+
 
 
 ; displayNumber subroutine
@@ -141,16 +164,19 @@ displayNumber
 	LDMFD SP!,{R3, R4, PC}
 
 
+
 ; delay subroutine
 delay
 	STMFD SP!,{R4, LR}
 	;delay for about a half second
-	LDR	R4,=4000000
+	LDR	R4,=5000000
 timerLoop
 	SUBS R4,R4,#1
 	BNE	timerLoop
 
 	LDMFD SP!,{R4, PC}
+
+
 
 ; reverseBits subroutine
 ;	need to reverse them for the LEDs to display them in the right order
