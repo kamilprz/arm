@@ -83,15 +83,18 @@ operandPin
 	BEQ plus
 	CMP R10,#2
 	BEQ subtract
+noOperand
+	MOV R0,R5
+	B noDisplay
 plus
-	ADD R0, R6, R5
+	ADD R0, R0, R5
 	B display
 subtract						
-	SUB R0, R6, R5					
+	SUB R0, R0, R5					
 display	
 	MOV R12, R0					
 	BL displayNumber								
-noOperand	
+noDisplay
 	MOV R11, #1					
 	MOV R6, R5					; copy of inputNumber (for clear)		
 	MOV R5, #0 					; reset inputNumber
