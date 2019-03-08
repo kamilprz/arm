@@ -95,8 +95,7 @@ display
 	MOV R12, R0					
 	BL displayNumber								
 noDisplay
-	MOV R11, #1					
-	MOV R6, R5					; copy of inputNumber (for clear)		
+	MOV R11, #1							
 	MOV R5, #0 					; reset inputNumber
 	CMP R9, #22
 	MOVEQ R10, #1
@@ -111,22 +110,10 @@ pin22Long
 	LDR R7,= 0x000f0000
 	STR R7,[R1]
 	
-	CMP R10,#0					; no operands, do nothing
-	BEQ loop	
-	CMP R10,#1					; if(lastOperand == +)
-	BNE minus					
-	SUB R0,R0,R6					; to clear + and last number
-	MOV R5, #0					; subtract that number from sum and clear it
-	MOV R6, #0
-	MOV R10,#0					; lastOperand = null
-	MOV R11,#0					; operandPressed = false
-	B loop
-minus
-	ADD R0,R0,R6
-	MOV R5, #0					; subtract that number from sum and clear it
-	MOV R6, #0
-	MOV R10,#0					; lastOperand = null
-	MOV R11,#0					; operandPressed = false
+	MOV R5, #0
+	MOV R9, #0
+;	MOV R10, #0
+	MOV R11, #0
 	B loop
 	
 	
@@ -138,14 +125,14 @@ pin23Long
 
 	MOV R0, #0					; clear sum
 	MOV R5, #0					; clear current number
-	MOV R6, #0
-	MOV R9, #0
+	MOV R9, #0					
 	MOV R10, #0					; operandPressed = false
 	MOV R11, #0
 	B loop
-
-	B loop						; infinite loop
 	
+	
+	
+	B loop						; infinite loop	
 stop	B	stop
 
 
