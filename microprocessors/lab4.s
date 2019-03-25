@@ -92,17 +92,26 @@ start
 	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
+	; initialize counter to 0
+	LDR R4,= counter
+	LDR R5,[R4]
+	MOV R5, #0
+	STR R5,[R4]
+	
 	
 	;R11 = 1 - red
 	;	   2 - blue 
 	;      3 - green
+	
+	ADD R12, R12, #200
 wloop	
 	; there are 200 of 5ms interrupts in a second, R12 incremented each time in interrupt handler
-	CMP R12, #200
+	LDR R5,[R4]
+	CMP R12, R5
 	BEQ updateColour
 	B wloop
 updateColour
-	MOV R12, #0
+	ADD R12, R12, #200
 	ADD R11, R11, #1
 	CMP R11, #4
 	BLO display
@@ -159,10 +168,17 @@ irqhan	sub	lr,lr,#4
 ;here we stop the VIC from making the interrupt request to the CPU:
 	ldr	r0,=VIC
 	mov	r1,#0
-	ADD R12, R12, #1
+	LDR R4,=counter
+	LDR R5,[R4]
+	ADD R5,R5,#1
+	STR R5,[R4]
 	str	r1,[r0,#VectAddr]	; reset VIC
 
 	ldmfd	sp!,{r0-r1,pc}^	; return from interrupt, restoring pc from lr
 				; and also restoring the CPSR
 
+
+	AREA	TestData, DATA, READWRITE
+counter DCD 0
+	
 	END
