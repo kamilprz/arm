@@ -101,8 +101,8 @@ LEDprogram
 whloop	ldr	r6,=0x00010000				; start with P1.16.
 floop	str	r6,[r5]	   					; clear the bit -> turn on the LED
 
-;delay for about a half second
-	ldr	r8,=4000000
+;delay for some time
+	ldr	r8,=900000
 	
 dloop2	subs	r8,r8,#1
 	bne	dloop2
@@ -127,10 +127,9 @@ RGBprogram
 	STR R7,[R6]							
 	LDR R7,=IO0CLR1 					; R7 turns on LEDS
 	
-
 wloop	
 	LDR R8,=0x00200000
-	STR R8,[R6] 						; turn on green
+	STR R8,[R7] 						; turn on green
 	
 	; turns on / off every around half second
 	LDR	R9,=4000000
@@ -139,8 +138,8 @@ dloop
 	SUBS	R9,R9,#1
 	BNE	dloop
 	
-	LDR R8, =IO0SET1
-	STR R8,[R7] 						; turn off
+	LDR R8, =PINS1
+	STR R8,[R6] 						; turn off
 	
 	ldr	r9,=4000000
 	
